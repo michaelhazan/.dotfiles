@@ -20,7 +20,7 @@ complete -F _complete_alias glog
 complete -F _complete_alias gun
 complete -F _complete_alias gxp
 complete -F _complete_alias gcb
-complete -F _complete_alias gco
+complete -F _complete_alias rail
 complete -F _complete_alias gac
 complete -F _complete_alias gbr
 complete -F _complete_alias gsm
