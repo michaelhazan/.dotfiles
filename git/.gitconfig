@@ -10,6 +10,18 @@
   pager      = "delta"
   # Do not ignore filename casing
   ignorecase = false
+  # Change the default fsmonitor to be *faster* RAH
+	fsmonitor = rs-git-fsmonitor
+  
+  # untrackedCache, commitgraph, manyFiles, and index version 4, should all help with the performance of 'git status' and 'git log'
+	untrackedCache = true
+	commitgraph = true
+
+[feature]
+	manyFiles = true
+
+[index]
+	version = 4
 
 [credential]
   helper = "store"
@@ -81,3 +93,5 @@
 # }}}
 
 # vim: foldmethod=marker
+[fetch]
+	writeCommitGraph = true

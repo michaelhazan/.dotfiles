@@ -137,7 +137,7 @@ alias glo="git log --oneline"
 alias glog="git log"
 alias gun="git restore --staged"
 alias gxp="git explode"
-alias gco="git checkout"
+alias rail="git checkout"
 alias gac="git commit -a"
 alias gbr="git branch"
 alias gsm="git submodule"
@@ -232,6 +232,43 @@ githubraw() {
   local path="$2"
 
   curl -SLO "https://github.com/${repo}/raw/main/${path}"
+}
+
+# Specific turbo functions
+turd() {
+  if [ $# -eq 0 ]; then
+    turbo dev --filter 'server' --filter '@*/staff' --filter '@*/admin'
+    return
+  fi
+  tb="turbo dev --filter 'server'"
+  for opt in $@; do
+    case $opt in
+    -a) tb="turbo dev" ;;
+    -os) tb="turbo dev --filter 'server'" ;;
+    -p) tb+=" --filter '@*/patient'" ;;
+    -s) tb+=" --filter '@*/staff'" ;;
+    -db) tb+=" --filter '@*/department-board'" ;;
+    -ad) tb+=" --filter @*/admin" ;;
+    -i) tb+=" --filter '@internal/*'" ;;
+    esac
+  done
+  eval "$tb"
+}
+
+# n3 command with a custom configuration
+n() {
+  export NNN_OPENER=nvim
+  export PAGER="less -Ri"
+
+  BLK="0B" CHR="0B" DIR="04" EXE="06" REG="00" HARDLINK="06" SYMLINK="06" MISSING="00" ORPHAN="09" FIFO="06" SOCK="0B" OTHER="06"
+
+  export NNN_COLORS="$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER"
+  export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+
+  command nnn -cdEFnQruxH "$@"
+
+  . "$NNN_TMPFILE"
+  rm -f -- "$NNN_TMPFILE" >/dev/null
 }
 
 # }}}

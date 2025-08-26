@@ -1,4 +1,7 @@
-format = """$all$line_break$character"""
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """$all$aws$localip$cmd_duration$line_break$character"""
 
 [character]
 success_symbol = '[](cyan)'
@@ -7,6 +10,11 @@ error_symbol = '[](red)'
 [memory_usage]
 disabled = false
 style = "dimmed white"
+
+[localip]
+ssh_only = false
+format = "[$localipv4]($style) "
+disabled = false
 
 [directory]
 style = "cyan"
@@ -35,6 +43,7 @@ symbol = "🧊 "
 
 [aws]
 force_display = true
+symbol = "☁️ "
 
 [kubernetes]
 disabled=false
