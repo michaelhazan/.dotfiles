@@ -1,6 +1,6 @@
 # .dotfiles
 
-This is a set of dotfiles for Linux, intended to be used with [GNU `stow`](https://www.gnu.org/software/stow/).
+This is a set of dotfiles for Linux / MacOs, intended to be used with [GNU `stow`](https://www.gnu.org/software/stow/).
 
 ## Terminology
 
