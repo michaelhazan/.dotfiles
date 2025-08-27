@@ -174,6 +174,7 @@ alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {
 alias mit_license="curl https://api.github.com/licenses/mit -s | jq '.body' -r"
 # `pay-respects` - correct mistakes in CLI
 if command -v pay-respects >/dev/null; then
+  export _PR_AI_DISABLE=1 # We don't want that scummy AI >:(
   eval "$(pay-respects bash --alias fuck)"
 fi
 # `zoxide` - a better `cd`
