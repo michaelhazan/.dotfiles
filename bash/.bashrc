@@ -4,17 +4,17 @@
 
 # If not running interactively, don't do anything
 case $- in
-    *i*) ;;
-      *) return;;
+*i*) ;;
+*) return ;;
 esac
 
 # Check if a file exists, and source it if it does.
 # This way, we can enable certain tools only if they actually exist.
 sourceif() {
-  if [ -f "$1" ]; then
-    # shellcheck disable=SC1090
-    . "$1"
-  fi
+	if [ -f "$1" ]; then
+		# shellcheck disable=SC1090
+		. "$1"
+	fi
 }
 
 # {{{ Tool locations
@@ -62,6 +62,8 @@ PATH="$PATH:/usr/bin"
 PATH="$PATH:/usr/sbin"
 PATH="$PATH:/usr/local/bin"
 PATH="$PATH:/usr/local/sbin"
+# Databases
+PATH="$PATH:/usr/local/mysql/bin/"
 # Google Cloud CLI
 sourceif "$HOME/google-cloud-sdk/path.bash.inc"
 sourceif "$HOME/google-cloud-sdk/completion.bash.inc"
@@ -86,16 +88,16 @@ shopt -s checkwinsize
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if ! shopt -oq posix; then
-  if command -v brew >/dev/null && [ -f "$(brew --prefix)/etc/profile.d/bash_completion.sh" ]; then
-    source "$(brew --prefix)/etc/profile.d/bash_completion.sh" 
-    command -v xcode-select >/dev/null && sourceif "$(xcode-select -p)/usr/share/git-core/git-completion.bash"
-  elif [ -f /usr/share/bash-completion/bash_completion ]; then
-    source /usr/share/bash-completion/bash_completion
-  elif [ -f /usr/local/etc/profile.d/bash_completion.sh ]; then
-    source /usr/local/etc/profile.d/bash_completion.sh
-  elif [ -f /etc/bash_completion ]; then
-    source /etc/bash_completion
-  fi
+	if command -v brew >/dev/null && [ -f "$(brew --prefix)/etc/profile.d/bash_completion.sh" ]; then
+		source "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+		command -v xcode-select >/dev/null && sourceif "$(xcode-select -p)/usr/share/git-core/git-completion.bash"
+	elif [ -f /usr/share/bash-completion/bash_completion ]; then
+		source /usr/share/bash-completion/bash_completion
+	elif [ -f /usr/local/etc/profile.d/bash_completion.sh ]; then
+		source /usr/local/etc/profile.d/bash_completion.sh
+	elif [ -f /etc/bash_completion ]; then
+		source /etc/bash_completion
+	fi
 fi
 
 # }}}
@@ -113,7 +115,7 @@ sourceif "$GHCUP_DIR/env"
 sourceif "$CARGO_DIR/env"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 if command -v starship >/dev/null; then
-  eval "$(starship init bash)"
+	eval "$(starship init bash)"
 fi
 
 # }}}
@@ -174,25 +176,25 @@ alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {
 alias mit_license="curl https://api.github.com/licenses/mit -s | jq '.body' -r"
 # `pay-respects` - correct mistakes in CLI
 if command -v pay-respects >/dev/null; then
-  export _PR_AI_DISABLE=1 # We don't want that scummy AI >:(
-  eval "$(pay-respects bash --alias fuck)"
+	export _PR_AI_DISABLE=1 # We don't want that scummy AI >:(
+	eval "$(pay-respects bash --alias fuck)"
 fi
 # `zoxide` - a better `cd`
 if command -v zoxide >/dev/null; then
-  eval "$(zoxide init bash --cmd cd)"
+	eval "$(zoxide init bash --cmd cd)"
 fi
 # `bat` - a better `cat`
 if command -v bat >/dev/null; then
-  alias cat="bat"
+	alias cat="bat"
 fi
 # `eza` - a better `ls`
 if command -v eza >/dev/null; then
-  alias ls="eza"
+	alias ls="eza"
 fi
 # pbcopy + pbpaste for linux
 if command -v xsel >/dev/null; then
-  command -v pbcopy >/dev/null || alias pbcopy='xsel --clipboard --input'
-  command -v pbpaste >/dev/null || alias pbpaste='xsel --clipboard --output'
+	command -v pbcopy >/dev/null || alias pbcopy='xsel --clipboard --input'
+	command -v pbpaste >/dev/null || alias pbpaste='xsel --clipboard --output'
 fi
 # ls
 alias ll='ls -alH'
@@ -200,11 +202,11 @@ alias la='ls -a'
 alias l='ls -F'
 # Allow colors
 if [ -x /usr/bin/dircolors ]; then
-    alias dir='dir --color=auto'
-    alias vdir='vdir --color=auto'
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+	alias dir='dir --color=auto'
+	alias vdir='vdir --color=auto'
+	alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
 fi
 # An "alert" alias for long running commands, used like:
 # `sleep 10; alert`
@@ -223,55 +225,56 @@ alias rc="source ~/.bashrc"
 
 # Make a directory, then `cd` into it.
 mkcd() {
-  mkdir "$1"
-  cd "$1" || exit
+	mkdir "$1"
+	cd "$1" || exit
 }
 
 # Download something from GitHub.
 githubraw() {
-  local repo="$1"
-  local path="$2"
+	local repo="$1"
+	local path="$2"
 
-  curl -SLO "https://github.com/${repo}/raw/main/${path}"
+	curl -SLO "https://github.com/${repo}/raw/main/${path}"
 }
 
 # Specific turbo functions
 turd() {
-  if [ $# -eq 0 ]; then
-    turbo dev --filter 'server' --filter '@*/staff' --filter '@*/admin'
-    return
-  fi
-  tb="turbo dev --filter 'server'"
-  for opt in $@; do
-    case $opt in
-    -a) tb="turbo dev" ;;
-    -os) tb="turbo dev --filter 'server'" ;;
-    -p) tb+=" --filter '@*/patient'" ;;
-    -s) tb+=" --filter '@*/staff'" ;;
-    -db) tb+=" --filter '@*/department-board'" ;;
-    -ad) tb+=" --filter @*/admin" ;;
-    -i) tb+=" --filter '@internal/*'" ;;
-    esac
-  done
-  eval "$tb"
+	if [ $# -eq 0 ]; then
+		turbo dev --filter 'server' --filter '@*/staff' --filter '@*/admin'
+		return
+	fi
+	tb="turbo dev --filter 'server'"
+	for opt in $@; do
+		case $opt in
+		-a) tb="turbo dev" ;;
+		-os) tb="turbo dev --filter 'server'" ;;
+		-p) tb+=" --filter '@*/patient'" ;;
+		-s) tb+=" --filter '@*/staff'" ;;
+		-db) tb+=" --filter '@*/department-board'" ;;
+		-ad) tb+=" --filter @*/admin" ;;
+		-i) tb+=" --filter '@internal/*'" ;;
+		esac
+	done
+	eval "$tb"
 }
 
 # n3 command with a custom configuration
 n() {
-  export NNN_OPENER=nvim
-  export PAGER="less -Ri"
+	export NNN_OPENER=nvim
+	export PAGER="less -Ri"
 
-  BLK="0B" CHR="0B" DIR="04" EXE="06" REG="00" HARDLINK="06" SYMLINK="06" MISSING="00" ORPHAN="09" FIFO="06" SOCK="0B" OTHER="06"
+	BLK="0B" CHR="0B" DIR="04" EXE="06" REG="00" HARDLINK="06" SYMLINK="06" MISSING="00" ORPHAN="09" FIFO="06" SOCK="0B" OTHER="06"
 
-  export NNN_COLORS="$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER"
-  export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+	export NNN_COLORS="$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER"
+	export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
 
-  command nnn -cdEFnQruxH "$@"
+	command nnn -cdEFnQruxH "$@"
 
-  . "$NNN_TMPFILE"
-  rm -f -- "$NNN_TMPFILE" >/dev/null
+	. "$NNN_TMPFILE"
+	rm -f -- "$NNN_TMPFILE" >/dev/null
 }
 
 # }}}
 
 # vim: foldmethod=marker
+. "$HOME/.cargo/env"
