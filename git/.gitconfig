@@ -20,6 +20,9 @@
 [feature]
 	manyFiles = true
 
+[fetch]
+	writeCommitGraph = true
+
 [index]
 	version = 4
 
@@ -93,8 +96,5 @@
 # }}}
 
 # vim: foldmethod=marker
-[fetch]
-	writeCommitGraph = true
-[user]
-	email = michaelhazan@hilma.tech
-	name = Michael Hazan
+
+
