@@ -1,4 +1,14 @@
 theme = tokyonight
-macos-option-as-alt = left
 font-size = 16
 fullscreen = true
+maximize = true
+macos-titlebar-style = transparent
+macos-hidden = always
+macos-icon = holographic
+
+auto-update = check
+
+macos-option-as-alt = left
+
+macos-auto-secure-input = true
+macos-secure-input-indication = true

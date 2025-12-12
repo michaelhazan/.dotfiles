@@ -11,11 +11,11 @@
   # Do not ignore filename casing
   ignorecase = false
   # Change the default fsmonitor to be *faster* RAH
-	fsmonitor = rs-git-fsmonitor
+  fsmonitor = true
   
   # untrackedCache, commitgraph, manyFiles, and index version 4, should all help with the performance of 'git status' and 'git log'
-	untrackedCache = true
-	commitgraph = true
+  untrackedCache = true
+  commitgraph = true
 
 [feature]
 	manyFiles = true
@@ -95,3 +95,6 @@
 # vim: foldmethod=marker
 [fetch]
 	writeCommitGraph = true
+[user]
+	email = michaelhazan@hilma.tech
+	name = Michael Hazan

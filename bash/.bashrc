@@ -63,7 +63,7 @@ PATH="$PATH:/usr/sbin"
 PATH="$PATH:/usr/local/bin"
 PATH="$PATH:/usr/local/sbin"
 # Databases
-PATH="$PATH:/usr/local/mysql/bin/"
+PATH="$PATH:/opt/homebrew/opt/mysql@8.0/bin"
 # Google Cloud CLI
 sourceif "$HOME/google-cloud-sdk/path.bash.inc"
 sourceif "$HOME/google-cloud-sdk/completion.bash.inc"
@@ -107,6 +107,7 @@ fi
 export EDITOR=nvim
 export MANPAGER='nvim +Man!'
 export MYSQL_PS1='[\u@\h] \d> '
+export BASH_SILENCE_DEPRECATION_WARNING=1
 sourceif "$NVM_DIR/nvm.sh"
 sourceif "$NVM_DIR/bash_completion"
 sourceif "$HOME/.fzf.bash"
@@ -278,3 +279,5 @@ n() {
 
 # vim: foldmethod=marker
 . "$HOME/.cargo/env"
+
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # shellcheck source=./complete_alias
-. $HOME/.complete_alias
+. "$HOME/.complete_alias"
 
 complete -F _complete_alias gst
 complete -F _complete_alias gstt
