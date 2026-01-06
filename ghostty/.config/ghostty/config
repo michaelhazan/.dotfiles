@@ -2,9 +2,10 @@ theme = tokyonight
 font-size = 16
 fullscreen = true
 maximize = true
-macos-titlebar-style = transparent
 macos-hidden = always
-macos-icon = holographic
+macos-icon = retro
+background-opacity = 0.9
+link-previews = true
 
 auto-update = check
 

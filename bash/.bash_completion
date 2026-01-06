@@ -44,3 +44,17 @@ complete -F _complete_alias dk
 complete -F _complete_alias dkc
 
 complete -F _complete_alias v
+
+_complete_cdwt() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local opts
+  opts=$(git worktree list --porcelain \
+  | grep '^worktree ' \
+  | awk '{print $2}' \
+  | xargs -n1 basename)
+  COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+complete -F _complete_cdwt cdwt
+complete -W "$(aws configure list-profiles)" ssologin 
+
+complete -C "aws_completer" aws

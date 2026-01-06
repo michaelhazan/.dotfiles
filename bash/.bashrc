@@ -148,7 +148,10 @@ alias gsm="git submodule"
 alias gcz="git cz"
 alias gcv="git convencm"
 alias ghlp="git help"
-alias gwt="git worktree"
+alias gwt="git -C \$(git rev-parse --path-format=absolute --git-common-dir | xargs dirname) worktree"
+function cdwt() {
+	command cd "$(git rev-parse --path-format=absolute --git-common-dir | xargs dirname)/$*" || return
+}
 alias gbs="git bisect start"
 alias gbsr="git bisect reset"
 alias gbg="git bisect good"
@@ -176,6 +179,7 @@ alias dkc="docker compose"
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"'
 # MIT License
 alias mit_license="curl https://api.github.com/licenses/mit -s | jq '.body' -r"
+
 # `pay-respects` - correct mistakes in CLI
 if command -v pay-respects >/dev/null; then
 	export _PR_AI_DISABLE=1 # We don't want that scummy AI >:(
@@ -239,6 +243,7 @@ githubraw() {
 	curl -SLO "https://github.com/${repo}/raw/main/${path}"
 }
 
+
 # Specific turbo functions
 turd() {
 	if [ $# -eq 0 ]; then
@@ -246,7 +251,7 @@ turd() {
 		return
 	fi
 	tb="turbo dev --filter 'server'"
-	for opt in $@; do
+	for opt in "$@"; do
 		case $opt in
 		-a) tb="turbo dev" ;;
 		-os) tb="turbo dev --filter 'server'" ;;
@@ -275,6 +280,15 @@ n() {
 	. "$NNN_TMPFILE"
 	rm -f -- "$NNN_TMPFILE" >/dev/null
 }
+# AWS
+ssologin() { 
+	command aws sso login --profile "$1" 
+	export AWS_PROFILE="$1" 
+}
+ssologout() {
+	command aws sso logout
+	unset AWS_PROFILE
+}
 
 # }}}
 
@@ -282,3 +296,8 @@ n() {
 . "$HOME/.cargo/env"
 
 
+
+# ZVM
+export ZVM_INSTALL="$HOME/.zvm/self"
+export PATH="$PATH:$HOME/.zvm/bin"
+export PATH="$PATH:$ZVM_INSTALL/"
