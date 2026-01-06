@@ -29,12 +29,15 @@ vim.opt.smartcase = true -- ...unless there's an uppercase
 vim.opt.swapfile = false -- Disable swapfile
 vim.opt.winborder = "rounded" -- Nicer floating windows
 vim.opt.completeopt = { "noselect", "menuone", "fuzzy" } -- Menu for autocompletion, always
+vim.opt.clipboard = "unnamedplus" -- Use system clipboard
+vim.opt.showmode = false -- Do not show the mode, Lualine does that for us
 vim.wo.signcolumn = "yes" -- Always keep sign column open
 vim.diagnostic.config { jump = { float = true } } -- Show floating diagnostics when jumping to erro
 vim.filetype.add {
   extension = {
     -- Use `gitcommit` filetype for `Neogit`
     NeogitCommitMessage = "gitcommit",
+    lss = "xml",
   },
 }
 
@@ -43,16 +46,16 @@ vim.filetype.add {
 -- {{{ Plugins
 
 -- Install plugins with native Neovim package manager (requires nvim 12+)
-vim.pack.add {
+local plugins = {
   { src = "https://github.com/stevearc/oil.nvim" },
   { src = "https://github.com/mason-org/mason.nvim" },
   { src = "https://github.com/nvim-lua/plenary.nvim" },
   { src = "https://github.com/nvim-telescope/telescope.nvim" },
+  { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
   { src = "https://github.com/NeogitOrg/neogit" },
   { src = "https://github.com/sindrets/diffview.nvim" },
   { src = "https://github.com/folke/tokyonight.nvim" },
-  { src = "https://github.com/ej-shafran/compile-mode.nvim" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/stevearc/conform.nvim" },
   { src = "https://github.com/lewis6991/gitsigns.nvim" },
@@ -60,8 +63,26 @@ vim.pack.add {
   { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
   { src = "https://github.com/tpope/vim-abolish" },
   { src = "https://github.com/folke/todo-comments.nvim" },
+  { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
+  { src = "https://github.com/nvim-lualine/lualine.nvim" },
 }
 
+-- Use local directories for plugins I developed
+local compile_mode_path = vim.env.HOME .. "/plugins/compile-mode.nvim"
+
+if vim.fn.isdirectory(compile_mode_path) == 1 then
+  vim.opt.rtp:append(compile_mode_path)
+else
+  table.insert(plugins, { src = "https://github.com/ej-shafran/compile-mode.nvim" })
+end
+
+vim.pack.add(plugins)
+
+-- Lualine: better statusline
+require("lualine").setup {
+  sections = { lualine_y = { "lsp_status" } },
+  extensions = { "quickfix", "oil", "mason", require "compile-mode.extensions.lualine" },
+}
 -- Oil: file explorer
 require("oil").setup {
   skip_confirm_for_simple_edits = true,
@@ -75,7 +96,16 @@ require("oil").setup {
 }
 
 -- Telescope: pickers and fuzzy searches
-require("telescope").setup {}
+require("telescope").setup {
+  extensions = {
+    ["ui-select"] = {
+      require("telescope.themes").get_cursor {
+        -- even more opts
+      },
+    },
+  },
+}
+require("telescope").load_extension "ui-select"
 
 -- Harpoon: jump between files
 require("harpoon"):setup()
@@ -83,6 +113,9 @@ local hlist = require("harpoon"):list()
 
 -- Neogit: Git client
 require("neogit").setup { disable_hint = true, console_timeout = 7000 }
+
+-- Diffview: Git diff client
+require("diffview").setup { view = { merge_tool = { layout = "diff3_mixed" } } }
 
 -- Gitsigns: in-file Git integration
 require("gitsigns").setup {
@@ -104,12 +137,14 @@ require("conform").setup {
     c = { "clang-format" },
     typescript = { "prettierd", "prettier" },
     javascript = { "prettierd", "prettier" },
+    html = { "prettierd", "prettier" },
     css = { "prettierd", "prettier" },
     scss = { "prettierd", "prettier" },
     markdown = { "prettierd", "prettier" },
     json = { "prettierd", "prettier" },
     jsonc = { "prettierd", "prettier" },
     yaml = { "prettierd", "prettier" },
+    javascriptreact = { "prettierd", "prettier" },
     typescriptreact = { "prettierd", "prettier" },
     go = { "gofmt" },
     python = { "black" },
@@ -120,9 +155,17 @@ require("conform").setup {
 ---@module "compile-mode"
 ---@type CompileModeOpts
 vim.g.compile_mode = {
+  baleia_setup = true,
   default_command = "",
   bang_expansion = true,
   error_regexp_table = {
+    custom = {
+      regex = "^\\%(\\[\\%(ERROR\\|\\(WARNING\\)\\|\\(INFO\\)\\)\\] \\)\\?\\([^\n :]\\+\\):\\([1-9][0-9]*\\): ",
+      filename = 3,
+      row = 4,
+      type = { 1, 2 },
+      priority = 2,
+    },
     nodejs = {
       regex = "^\\s\\+at .\\+ (\\(.\\+\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\))$",
       filename = 1,
@@ -131,7 +174,7 @@ vim.g.compile_mode = {
       priority = 2,
     },
     typescript = {
-      regex = "^\\(.\\+\\):\\([1-9][0-9]*\\)[,:]\\([1-9][0-9]*\\) - error TS[1-9][0-9]*:",
+      regex = "^\\(.\\+\\)(\\([1-9][0-9]*\\)[,:]\\([1-9][0-9]*\\)): error TS[1-9][0-9]*:",
       filename = 1,
       row = 2,
       col = 3,
@@ -342,7 +385,6 @@ end)
 set("n", "<leader>b", "<cmd>Telescope buffers<cr>")
 set("n", "<leader>c", compile)
 set("n", "<leader>C", "<cmd>Recompile<cr>")
-set("n", "<leader>d", '"+d')
 set("n", "<leader>f", telescope_find_files(false))
 set("n", "<leader>F", telescope_find_files(true))
 set("n", "<leader>g", "<cmd>Neogit<cr>")
@@ -373,10 +415,23 @@ set("n", "<leader>tt", "<cmd>tab term<cr>")
 set("n", "<leader>tw", "<cmd>set wrap!<cr>")
 set("n", "<leader>tf", "<cmd>AutoformatToggle<cr>")
 set("n", "<leader>tF", "<cmd>AutoformatToggle!<cr>")
-set("n", "<leader>y", '"+y')
 
 -- Leader + other
-set({ "n", "v", "x" }, "<leader>.", vim.lsp.buf.code_action)
+set({ "n", "v", "x" }, "<leader>.", function()
+  vim.lsp.buf.code_action {
+    filter = function(action)
+      return action.disabled == nil
+    end,
+  }
+end)
+set({ "n", "v", "x" }, "<leader>,", function()
+  vim.lsp.buf.code_action {
+    apply = true,
+    filter = function(action)
+      return action.command ~= nil and action.command.command == "eslint.applyAllFixes"
+    end,
+  }
+end)
 set("n", "<leader>?", "<cmd>Telescope help_tags<cr>")
 set("n", "<leader>`", "<cmd>Telescope resume<cr>")
 for i = 1, 9 do
@@ -443,9 +498,6 @@ set("n", "]c", function()
 end)
 set("n", "gd", "<cmd>Telescope lsp_definitions<cr>")
 set("n", "grr", "<cmd>Telescope lsp_references<cr>")
-set({ "i", "s" }, "<Tab>", function()
-  return "<Tab>"
-end, { silent = true })
 
 -- }}}
 
@@ -469,7 +521,7 @@ end, config_files)
 local installed = require("mason-registry").get_installed_package_names()
 local uninstalled = vim.tbl_filter(function(server)
   return not vim.list_contains(installed, server)
-end, configured)
+end, vim.list_extend({ "shellcheck" }, configured))
 if #uninstalled > 0 then
   local uninstalled_text = vim.fn.join(uninstalled, "\n")
   local choice = vim.fn.confirm(("These servers will be installed:\n\n%s\n"):format(uninstalled_text), "&Yes\n&No", 1)

@@ -110,6 +110,7 @@ export MYSQL_PS1='[\u@\h] \d> '
 export BASH_SILENCE_DEPRECATION_WARNING=1
 sourceif "$NVM_DIR/nvm.sh"
 sourceif "$NVM_DIR/bash_completion"
+export FZF_CTRL_T_COMMAND=""
 sourceif "$HOME/.fzf.bash"
 sourceif "$HOME/.local/bin/fzf-git.sh"
 sourceif "$GHCUP_DIR/env"
