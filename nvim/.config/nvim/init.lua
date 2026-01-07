@@ -320,10 +320,19 @@ local function telescope_find_files(hidden)
 	end
 end
 
-local function compile()
-	vim.g.compilation_directory = get_current_dir()
-	require("compile-mode").compile()
+local function compile(root)
+	return function()
+		if root then
+			vim.g.compilation_directory = get_current_dir()
+		else
+			vim.g.compilation_directory = get_parent_dir()
+		end
+
+		require("compile-mode").compile()
+	end
 end
+
+
 
 -- }}}
 
@@ -384,8 +393,9 @@ set("n", "<leader>A", function()
 	hlist:prepend()
 end)
 set("n", "<leader>b", "<cmd>Telescope buffers<cr>")
-set("n", "<leader>c", compile)
-set("n", "<leader>C", "<cmd>Recompile<cr>")
+set("n", "<leader>c", compile(false))
+set("n", "<leader>C", compile(true))
+set("n", "<leader>c`", "<cmd>Recompile<cr>")
 set("n", "<leader>f", telescope_find_files(false))
 set("n", "<leader>F", telescope_find_files(true))
 set("n", "<leader>g", "<cmd>Neogit<cr>")
