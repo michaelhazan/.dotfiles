@@ -1,28 +1,15 @@
 format = """$all$line_break$character"""
 
 [character]
-success_symbol = '[](cyan)'
-error_symbol = '[](red)'
-
-[memory_usage]
-disabled = false
-style = "dimmed white"
-
-[directory]
-style = "cyan"
+success_symbol = "[>](bold cyan)"
+error_symbol = "[>](bold red)"
+vimcmd_symbol = "[<](bold cyan)"
+vimcmd_visual_symbol = "[<](bold yellow)"
+vimcmd_replace_symbol = "[<](bold purple)"
+vimcmd_replace_one_symbol = "[<](bold purple)"
 
 [git_status]
-style = "purple"
-
-[git_branch]
-style = "purple"
-
-[battery]
-full_symbol = "• "
-charging_symbol = "⇡ "
-discharging_symbol = "⇣ "
-unknown_symbol = "❓ "
-empty_symbol = "❗ "
+style = "bold purple"
 
 [erlang]
 symbol = "ⓔ "
@@ -30,11 +17,9 @@ symbol = "ⓔ "
 [nodejs]
 symbol = "[⬢](bold green) "
 
-[pulumi]
-symbol = "🧊 "
-
 [aws]
-force_display = true
+format = '(on [$symbol$profile ]($style))'
+symbol = '☁️ '
 
 [kubernetes]
 disabled=false
