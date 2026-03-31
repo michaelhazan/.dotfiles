@@ -32,7 +32,7 @@ To uninstall the dependencies, you can use:
 ./dependencies.sh remove
 ```
 
-## Installing packages
+## Installing Packages
 
 To install specific packages, use:
 
