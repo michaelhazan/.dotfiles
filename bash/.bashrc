@@ -24,6 +24,7 @@ export GHCUP_DIR="$HOME/.ghcup"
 export CARGO_DIR="$HOME/.cargo"
 export NVM_DIR="$HOME/.nvm"
 export BOB_DIR="$HOME/.local/share/bob"
+export ZVM_INSTALL="$HOME/.zvm/self"
 # You can add/override environment variables for tools
 # that you don't want to push to git in "$HOME/.bash_tools.local"
 sourceif "$HOME/.bash_tools.local"
@@ -37,6 +38,18 @@ sourceif "$HOME/.bash_tools.local"
 if command -v brew >/dev/null; then
 	PATH="$(brew --prefix)/bin:$PATH"
 fi
+
+# ZVM
+PATH="$PATH:$HOME/.zvm/bin"
+PATH="$PATH:$ZVM_INSTALL/"
+
+
+# RBENV
+if command -v rbenv >/dev/null; then
+	export PATH="$HOME/.rbenv/bin:$PATH"
+	eval "$(rbenv init -)"
+fi
+
 # Nix
 PATH="/nix/var/nix/profiles/default/bin:$PATH"
 # Local binaries
@@ -64,6 +77,8 @@ PATH="$PATH:/usr/local/bin"
 PATH="$PATH:/usr/local/sbin"
 # Databases
 PATH="$PATH:/opt/homebrew/opt/mysql@8.0/bin"
+# Toolbox App
+PATH="$PATH:/Library/Application Support/JetBrains/Toolbox/scripts"
 # Google Cloud CLI
 sourceif "$HOME/google-cloud-sdk/path.bash.inc"
 sourceif "$HOME/google-cloud-sdk/completion.bash.inc"
@@ -119,7 +134,9 @@ export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 if command -v starship >/dev/null; then
 	eval "$(starship init bash)"
 fi
-
+if command -v cargo >/dev/null; then
+	. "$HOME/.cargo/env"
+fi
 # }}}
 
 # {{{ Aliases
@@ -246,23 +263,22 @@ githubraw() {
 
 # Specific turbo functions
 turd() {
-	if [ $# -eq 0 ]; then
-		turbo dev --filter 'server' --filter '@*/staff' --filter '@*/admin'
-		return
-	fi
-	tb="turbo dev --filter 'server'"
+	action="run"
+	filters="--filter 'server' --filter '@*/staff' --filter '@*/admin'"
 	for opt in "$@"; do
 		case $opt in
-		-a) tb="turbo dev" ;;
-		-os) tb="turbo dev --filter 'server'" ;;
-		-p) tb+=" --filter '@*/patient'" ;;
-		-s) tb+=" --filter '@*/staff'" ;;
-		-db) tb+=" --filter '@*/department-board'" ;;
-		-ad) tb+=" --filter @*/admin" ;;
-		-i) tb+=" --filter '@internal/*'" ;;
+		  --all) filters="" ;;
+		  --server) filters+="--filter 'server'" ;;
+		  -w|--watch) action="watch";;
+		  -r|--run) action="run";;
+		  -p|--patient) filters+=" --filter '@*/patient'" ;;
+		  -s|--staff) filters+=" --filter '@*/staff'" ;;
+		  -db|--department-board) filters+=" --filter '@*/department-board'" ;;
+		  -a|--admin) filters+=" --filter @*/admin" ;;
+		  -i|--internal) filters+=" --filter '@internal/*'" ;;
 		esac
 	done
-	eval "$tb"
+	eval "turbo $action dev $filters"
 }
 
 # n3 command with a custom configuration
@@ -273,10 +289,11 @@ n() {
 	BLK="0B" CHR="0B" DIR="04" EXE="06" REG="00" HARDLINK="06" SYMLINK="06" MISSING="00" ORPHAN="09" FIFO="06" SOCK="0B" OTHER="06"
 
 	export NNN_COLORS="$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER"
-	export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
+	export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME}/.config/nnn/.lastd"
 
 	command nnn -cdEFnQruxH "$@"
 
+	# shellcheck source=/dev/null
 	. "$NNN_TMPFILE"
 	rm -f -- "$NNN_TMPFILE" >/dev/null
 }
@@ -293,11 +310,7 @@ ssologout() {
 # }}}
 
 # vim: foldmethod=marker
-. "$HOME/.cargo/env"
 
 
 
-# ZVM
-export ZVM_INSTALL="$HOME/.zvm/self"
-export PATH="$PATH:$HOME/.zvm/bin"
-export PATH="$PATH:$ZVM_INSTALL/"
+

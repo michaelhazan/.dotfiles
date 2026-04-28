@@ -1,13 +1,11 @@
 theme = tokyonight
 font-size = 16
 fullscreen = true
-maximize = true
-macos-hidden = always
-macos-icon = retro
-background-opacity = 0.9
+macos-icon = official
+background-opacity = 0.95
 link-previews = true
 
-auto-update = check
+auto-update = download 
 
 macos-option-as-alt = left
 

@@ -12,7 +12,6 @@
   ignorecase = false
   # Change the default fsmonitor to be *faster* RAH
   fsmonitor = true
-  
   # untrackedCache, commitgraph, manyFiles, and index version 4, should all help with the performance of 'git status' and 'git log'
   untrackedCache = true
   commitgraph = true
