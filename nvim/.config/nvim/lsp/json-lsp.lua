@@ -10,6 +10,7 @@ return {
       schemas = {
         { fileMatch = { "package.json" }, url = "https://json.schemastore.org/package.json" },
         { fileMatch = { "tsconfig*.json" }, url = "https://json.schemastore.org/tsconfig.json" },
+        { fileMatch = { "turbo.json" }, url = "https://turborepo.dev/schema.json" },
       },
     },
   },

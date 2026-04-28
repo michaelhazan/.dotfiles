@@ -17,11 +17,11 @@ vim.g.c_syntax_for_h = 1 -- Use C syntax for `.h` files instead of C++
 vim.opt.undofile = true -- Save undo history
 vim.opt.number = true -- Line numbers
 vim.opt.relativenumber = true -- Relative line numbers
-vim.opt.laststatus = 3 -- One singular status bar
 vim.opt.splitright = true -- Split right by default
 vim.opt.splitbelow = true -- Split below by default
 vim.opt.list = true -- Show extra whitespace
 vim.opt.cursorline = true -- Highlight current line
+vim.opt.guicursor = "" -- Keep a dumb old block cursor in insert mode
 vim.opt.hlsearch = true -- Search highlighting
 vim.opt.incsearch = true -- Incremental search
 vim.opt.ignorecase = true -- Ignore casing
@@ -32,7 +32,7 @@ vim.opt.completeopt = { "noselect", "menuone", "fuzzy" } -- Menu for autocomplet
 vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 vim.opt.showmode = false -- Do not show the mode, Lualine does that for us
 vim.wo.signcolumn = "yes" -- Always keep sign column open
-vim.diagnostic.config { jump = { float = true } } -- Show floating diagnostics when jumping to erro
+vim.diagnostic.config { jump = { float = true } } -- Show floating diagnostics when jumping to errors
 vim.filetype.add {
   extension = {
     -- Use `gitcommit` filetype for `Neogit`
@@ -45,7 +45,7 @@ vim.filetype.add {
 
 -- {{{ Plugins
 
--- Install plugins with native Neovim package manager (requires nvim 12+)
+-- Install plugins with native Neovim package manager (requires Neovim 0.12+)
 local plugins = {
   { src = "https://github.com/stevearc/oil.nvim" },
   { src = "https://github.com/mason-org/mason.nvim" },
@@ -54,7 +54,7 @@ local plugins = {
   { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
   { src = "https://github.com/NeogitOrg/neogit" },
   { src = "https://github.com/sindrets/diffview.nvim" },
-  { src = "https://github.com/folke/tokyonight.nvim" },
+  { src = "https://github.com/blazkowolf/gruber-darker.nvim" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/stevearc/conform.nvim" },
@@ -65,6 +65,7 @@ local plugins = {
   { src = "https://github.com/folke/todo-comments.nvim" },
   { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
   { src = "https://github.com/nvim-lualine/lualine.nvim" },
+  { src = "https://github.com/tweekmonster/helpful.vim" },
 }
 
 -- Use local directories for plugins I developed
@@ -80,7 +81,7 @@ vim.pack.add(plugins)
 
 -- Lualine: better statusline
 require("lualine").setup {
-  sections = { lualine_y = { "lsp_status" } },
+  sections = { lualine_y = { { "lsp_status", show_name = false } } },
   extensions = { "quickfix", "oil", "mason", require "compile-mode.extensions.lualine" },
 }
 -- Oil: file explorer
@@ -96,6 +97,7 @@ require("oil").setup {
 }
 
 -- Telescope: pickers and fuzzy searches
+---@diagnostic disable-next-line: redundant-parameter
 require("telescope").setup {
   extensions = {
     ["ui-select"] = {
@@ -105,6 +107,7 @@ require("telescope").setup {
     },
   },
 }
+---@diagnostic disable-next-line: undefined-field
 require("telescope").load_extension "ui-select"
 
 -- Harpoon: jump between files
@@ -115,7 +118,7 @@ local hlist = require("harpoon"):list()
 require("neogit").setup { disable_hint = true, console_timeout = 7000 }
 
 -- Diffview: Git diff client
-require("diffview").setup { view = { merge_tool = { layout = "diff3_mixed" } } }
+require("diffview").setup { view = { merge_tool = { layout = "diff3_mixed" } }, use_icons = false }
 
 -- Gitsigns: in-file Git integration
 require("gitsigns").setup {
@@ -159,6 +162,9 @@ vim.g.compile_mode = {
   baleia_setup = true,
   default_command = "",
   bang_expansion = true,
+  directory_change_matchers = {
+    { regex = [[^> @\?[^@]\+@\S\+ \S\+ \zs\(\S\+\)\ze$]], filename = 1 },
+  },
   error_regexp_table = {
     custom = {
       regex = "^\\%(\\[\\%(ERROR\\|\\(WARNING\\)\\|\\(INFO\\)\\)\\] \\)\\?\\([^\n :]\\+\\):\\([1-9][0-9]*\\): ",
@@ -166,6 +172,19 @@ vim.g.compile_mode = {
       row = 4,
       type = { 1, 2 },
       priority = 2,
+    },
+    odin = {
+      regex = [[\([^(]\+\)(\(\d\+\):\(\d\+\)) ]],
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    github = {
+      regex = [[::\%(error\|\(warning\)\)\s*file=\([^,]\+\),line=\(\d\+\)\%(,endLine=\(\d\+\)\)\?,col=\(\d\+\)\%(,endColumn=\(\d\+\)\)\?[^:]\+::\s*]],
+      filename = 2,
+      row = { 3, 4 },
+      col = { 5, 6 },
+      type = { 1 },
     },
     nodejs = {
       regex = "^\\s\\+at .\\+ (\\(.\\+\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\))$",
@@ -191,8 +210,17 @@ vim.g.compile_mode = {
 
 -- Highlight TODO comments
 require("todo-comments").setup {
+  signs = false,
   search = { pattern = [[\b(KEYWORDS)(\([^\)]*\))?:]] },
   highlight = { pattern = [[.*<((KEYWORDS)%(\(.{-1,}\))?):]] },
+  colors = {
+    error = { "DiagnosticError" },
+    warning = { "DiagnosticWarn" },
+    info = { "Comment" },
+    hint = { "DiagnosticHint" },
+    test = { "Identifier" },
+    default = { "Comment" },
+  },
 }
 
 -- Treesitter: syntax highlights + text-objects
@@ -221,7 +249,7 @@ require("nvim-treesitter.configs").setup {
   },
 }
 
--- Mason: install lsp servers
+-- Mason: install LSP servers
 require("mason").setup {}
 
 -- LuaSnip: snippets
@@ -338,9 +366,13 @@ end
 
 -- {{{ Commands
 
-vim.api.nvim_create_user_command("AutoformatToggle", function(args)
-  autoformat_toggle(args.bang)
+vim.api.nvim_create_user_command("AutoformatToggle", function(param)
+  autoformat_toggle(param.bang)
 end, { bang = true })
+vim.api.nvim_create_user_command("LspRestart", function(param)
+  vim.lsp.enable(param.args, false)
+  vim.lsp.enable(param.args, true)
+end, { nargs = 1 })
 
 -- }}}
 
@@ -369,6 +401,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
 
 -- Autocomplete using LSP
 vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("lsp-attach", {}),
   callback = function(ev)
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client and client:supports_method "textDocument/completion" then
@@ -459,7 +492,7 @@ set("n", "<leader><tab>o", "<cmd>tabonly<cr>")
 -- Single characters
 set("n", "-", "<cmd>Oil<cr>")
 
--- Prev/next
+-- Previous/next/current
 set("n", "[<tab>", "<cmd>tabprevious<cr>")
 set("n", "]<tab>", "<cmd>tabnext<cr>")
 set("n", "[h", function()
@@ -470,6 +503,13 @@ set("n", "]h", function()
 end)
 set("n", "[e", "<cmd>PrevError<cr>")
 set("n", "]e", "<cmd>NextError<cr>")
+set("n", "]]e", "<cmd>CurrentError<cr>")
+set("n", "]t", function()
+  require("todo-comments").jump_next { keywords = { "TODO" } }
+end)
+set("n", "[t", function()
+  require("todo-comments").jump_prev { keywords = { "TODO" } }
+end)
 
 -- Visual
 set("x", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
@@ -514,8 +554,27 @@ set("n", "grr", "<cmd>Telescope lsp_references<cr>")
 
 -- {{{ Colors
 
-vim.cmd "colorscheme tokyonight-night"
-vim.cmd "highlight clear Folded"
+---@diagnostic disable-next-line: missing-fields
+require("gruber-darker").setup {
+  italic = { strings = false, comments = false },
+}
+
+---@param hl_name string
+---@param opts vim.api.keyset.highlight
+local function hl(hl_name, opts)
+  vim.api.nvim_set_hl(0, hl_name, opts)
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("color-overrides", { clear = true }),
+  callback = function()
+    local colors = require "gruber-darker.palette"
+
+    hl("GruberDarkerDarkNiagara", { fg = colors.niagara:to_string() })
+  end,
+})
+
+vim.cmd "colorscheme gruber-darker"
 
 -- }}}
 

@@ -219,6 +219,8 @@ if command -v xsel >/dev/null; then
 	command -v pbcopy >/dev/null || alias pbcopy='xsel --clipboard --input'
 	command -v pbpaste >/dev/null || alias pbpaste='xsel --clipboard --output'
 fi
+# Neovim-related commands
+alias pager='nvim +Man!'
 # ls
 alias ll='ls -alH'
 alias la='ls -a'
