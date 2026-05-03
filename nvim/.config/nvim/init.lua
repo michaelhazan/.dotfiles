@@ -21,7 +21,6 @@ vim.opt.splitright = true -- Split right by default
 vim.opt.splitbelow = true -- Split below by default
 vim.opt.list = true -- Show extra whitespace
 vim.opt.cursorline = true -- Highlight current line
-vim.opt.guicursor = "" -- Keep a dumb old block cursor in insert mode
 vim.opt.hlsearch = true -- Search highlighting
 vim.opt.incsearch = true -- Incremental search
 vim.opt.ignorecase = true -- Ignore casing
@@ -54,7 +53,7 @@ local plugins = {
   { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
   { src = "https://github.com/NeogitOrg/neogit" },
   { src = "https://github.com/sindrets/diffview.nvim" },
-  { src = "https://github.com/blazkowolf/gruber-darker.nvim" },
+  { src = "https://github.com/catppuccin/nvim", name = "catppuccin" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/stevearc/conform.nvim" },
@@ -99,6 +98,11 @@ require("oil").setup {
 -- Telescope: pickers and fuzzy searches
 ---@diagnostic disable-next-line: redundant-parameter
 require("telescope").setup {
+  defaults = {
+    preview = {
+      treesitter = false,
+    },
+  },
   extensions = {
     ["ui-select"] = {
       require("telescope.themes").get_cursor {
@@ -554,27 +558,16 @@ set("n", "grr", "<cmd>Telescope lsp_references<cr>")
 
 -- {{{ Colors
 
----@diagnostic disable-next-line: missing-fields
-require("gruber-darker").setup {
-  italic = { strings = false, comments = false },
+require("catppuccin").setup {
+  default_integrations = true,
+  integrations = {
+    harpoon = true,
+    diffview = true,
+    mason = true,
+  },
 }
 
----@param hl_name string
----@param opts vim.api.keyset.highlight
-local function hl(hl_name, opts)
-  vim.api.nvim_set_hl(0, hl_name, opts)
-end
-
-vim.api.nvim_create_autocmd("ColorScheme", {
-  group = vim.api.nvim_create_augroup("color-overrides", { clear = true }),
-  callback = function()
-    local colors = require "gruber-darker.palette"
-
-    hl("GruberDarkerDarkNiagara", { fg = colors.niagara:to_string() })
-  end,
-})
-
-vim.cmd "colorscheme gruber-darker"
+vim.cmd.colorscheme "catppuccin-mocha"
 
 -- }}}
 
