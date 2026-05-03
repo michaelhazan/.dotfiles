@@ -1,0 +1,86 @@
+{
+  "plugins": {
+    "LuaSnip": {
+      "rev": "a62e1083a3cfe8b6b206e7d3d33a51091df25357",
+      "src": "https://github.com/L3MON4D3/LuaSnip"
+    },
+    "baleia.nvim": {
+      "rev": "fb3aff021b2b64ef820d0230d2c22ebfaf71bb6a",
+      "src": "https://github.com/m00qek/baleia.nvim",
+      "version": "'v1.3.0'"
+    },
+    "conform.nvim": {
+      "rev": "dca1a190aa85f9065979ef35802fb77131911106",
+      "src": "https://github.com/stevearc/conform.nvim"
+    },
+    "diffview.nvim": {
+      "rev": "4516612fe98ff56ae0415a259ff6361a89419b0a",
+      "src": "https://github.com/sindrets/diffview.nvim"
+    },
+    "gitsigns.nvim": {
+      "rev": "dd3f588bacbeb041be6facf1742e42097f62165d",
+      "src": "https://github.com/lewis6991/gitsigns.nvim"
+    },
+    "gruber-darker.nvim": {
+      "rev": "aba065c3a79b58cc3863d5c9db319255abd1258a",
+      "src": "https://github.com/blazkowolf/gruber-darker.nvim"
+    },
+    "harpoon": {
+      "rev": "87b1a3506211538f460786c23f98ec63ad9af4e5",
+      "src": "https://github.com/ThePrimeagen/harpoon",
+      "version": "'harpoon2'"
+    },
+    "helpful.vim": {
+      "rev": "60e031c3e3dc546cbd40493c9548517797ca1f0b",
+      "src": "https://github.com/tweekmonster/helpful.vim"
+    },
+    "lualine.nvim": {
+      "rev": "131a558e13f9f28b15cd235557150ccb23f89286",
+      "src": "https://github.com/nvim-lualine/lualine.nvim"
+    },
+    "mason.nvim": {
+      "rev": "cb8445f8ce85d957416c106b780efd51c6298f89",
+      "src": "https://github.com/mason-org/mason.nvim"
+    },
+    "mini.ai": {
+      "rev": "43eb2074843950a3a25aae56a5f41362ec043bfa",
+      "src": "https://github.com/nvim-mini/mini.ai"
+    },
+    "neogit": {
+      "rev": "88000e7e60177558d1b428a0d561c92e5d81341e",
+      "src": "https://github.com/NeogitOrg/neogit"
+    },
+    "oil.nvim": {
+      "rev": "0fcc83805ad11cf714a949c98c605ed717e0b83e",
+      "src": "https://github.com/stevearc/oil.nvim"
+    },
+    "plenary.nvim": {
+      "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
+      "src": "https://github.com/nvim-lua/plenary.nvim"
+    },
+    "telescope-ui-select.nvim": {
+      "rev": "6e51d7da30bd139a6950adf2a47fda6df9fa06d2",
+      "src": "https://github.com/nvim-telescope/telescope-ui-select.nvim"
+    },
+    "telescope.nvim": {
+      "rev": "ec009610d5d259ec59a6edf0219ef3f7ee4732e5",
+      "src": "https://github.com/nvim-telescope/telescope.nvim"
+    },
+    "todo-comments.nvim": {
+      "rev": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668",
+      "src": "https://github.com/folke/todo-comments.nvim"
+    },
+    "tokyonight.nvim": {
+      "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
+      "src": "https://github.com/folke/tokyonight.nvim"
+    },
+    "tree-sitter-manager.nvim": {
+      "rev": "33a94d022e3a5a500d878b784ba7fec61559c70a",
+      "src": "https://github.com/romus204/tree-sitter-manager.nvim"
+    },
+    "vim-abolish": {
+      "rev": "dcbfe065297d31823561ba787f51056c147aa682",
+      "src": "https://github.com/tpope/vim-abolish"
+    }
+  }
+}
