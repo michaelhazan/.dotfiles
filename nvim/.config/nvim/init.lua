@@ -4,7 +4,6 @@
 -- I use `bob` to manage my Neovim versions: https://github.com/MordechaiHadad/bob
 --
 -- Enjoy :)
-
 if not vim.fn.has "nvim-0.12.0" then
   error "This config requires version 0.12 or higher of Neovim :)"
 end
@@ -31,7 +30,11 @@ vim.opt.completeopt = { "noselect", "menuone", "fuzzy" } -- Menu for autocomplet
 vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 vim.opt.showmode = false -- Do not show the mode, Lualine does that for us
 vim.wo.signcolumn = "yes" -- Always keep sign column open
-vim.diagnostic.config { jump = { float = true } } -- Show floating diagnostics when jumping to errors
+vim.diagnostic.config {
+  jump = {
+    float = true,
+  },
+} -- Show floating diagnostics when jumping to errors
 vim.filetype.add {
   extension = {
     -- Use `gitcommit` filetype for `Neogit`
@@ -45,42 +48,52 @@ vim.filetype.add {
 -- {{{ Plugins
 
 -- Install plugins with native Neovim package manager (requires Neovim 0.12+)
-local plugins = {
-  { src = "https://github.com/stevearc/oil.nvim" },
-  { src = "https://github.com/mason-org/mason.nvim" },
-  { src = "https://github.com/nvim-lua/plenary.nvim" },
-  { src = "https://github.com/nvim-telescope/telescope.nvim" },
-  { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
-  { src = "https://github.com/NeogitOrg/neogit" },
-  { src = "https://github.com/sindrets/diffview.nvim" },
-  { src = "https://github.com/catppuccin/nvim", name = "catppuccin" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
-  { src = "https://github.com/stevearc/conform.nvim" },
-  { src = "https://github.com/lewis6991/gitsigns.nvim" },
-  { src = "https://github.com/L3MON4D3/LuaSnip" },
-  { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
-  { src = "https://github.com/tpope/vim-abolish" },
-  { src = "https://github.com/folke/todo-comments.nvim" },
-  { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
-  { src = "https://github.com/nvim-lualine/lualine.nvim" },
-  { src = "https://github.com/tweekmonster/helpful.vim" },
-}
-
--- Use local directories for plugins I developed
-local compile_mode_path = vim.env.HOME .. "/plugins/compile-mode.nvim"
-
-if vim.fn.isdirectory(compile_mode_path) == 1 then
-  vim.opt.rtp:append(compile_mode_path)
-else
-  table.insert(plugins, { src = "https://github.com/ej-shafran/compile-mode.nvim" })
-end
+local local_plugins_dir = vim.env.HOME .. "/plugins"
+local plugins = vim
+  .iter({
+    { src = "https://github.com/stevearc/oil.nvim" },
+    { src = "https://github.com/mason-org/mason.nvim" },
+    { src = "https://github.com/nvim-lua/plenary.nvim" },
+    { src = "https://github.com/nvim-telescope/telescope.nvim" },
+    { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
+    { src = "https://github.com/NeogitOrg/neogit" },
+    { src = "https://github.com/sindrets/diffview.nvim" },
+    { src = "https://github.com/catppuccin/nvim", name = "catppuccin" },
+    { src = "https://github.com/romus204/tree-sitter-manager.nvim" },
+    { src = "https://github.com/stevearc/conform.nvim" },
+    { src = "https://github.com/lewis6991/gitsigns.nvim" },
+    { src = "https://github.com/L3MON4D3/LuaSnip" },
+    { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
+    { src = "https://github.com/tpope/vim-abolish" },
+    { src = "https://github.com/folke/todo-comments.nvim" },
+    { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
+    { src = "https://github.com/nvim-lualine/lualine.nvim" },
+    { src = "https://github.com/tweekmonster/helpful.vim" },
+    { src = "https://github.com/ej-shafran/compile-mode.nvim", use_local = "compile-mode.nvim" },
+  })
+  :filter(function(plugin)
+    if not plugin.use_local then
+      return true
+    end
+    local path = local_plugins_dir .. "/" .. plugin.use_local
+    local isdir = vim.fn.isdirectory(path) == 1
+    if isdir then
+      vim.opt.rtp:append(path)
+    end
+    return not isdir
+  end)
+  :totable()
 
 vim.pack.add(plugins)
 
 -- Lualine: better statusline
 require("lualine").setup {
-  sections = { lualine_y = { { "lsp_status", show_name = false } } },
+  sections = {
+    lualine_y = { {
+      "lsp_status",
+      show_name = false,
+    } },
+  },
   extensions = { "quickfix", "oil", "mason", require "compile-mode.extensions.lualine" },
 }
 -- Oil: file explorer
@@ -92,7 +105,9 @@ require("oil").setup {
     ["g="] = "actions.preview",
     ["&"] = "actions.open_cmdline",
   },
-  view_options = { show_hidden = true },
+  view_options = {
+    show_hidden = true,
+  },
 }
 
 -- Telescope: pickers and fuzzy searches
@@ -119,15 +134,27 @@ require("harpoon"):setup()
 local hlist = require("harpoon"):list()
 
 -- Neogit: Git client
-require("neogit").setup { disable_hint = true, console_timeout = 7000 }
+require("neogit").setup {
+  disable_hint = true,
+  console_timeout = 7000,
+}
 
 -- Diffview: Git diff client
-require("diffview").setup { view = { merge_tool = { layout = "diff3_mixed" } }, use_icons = false }
+require("diffview").setup {
+  view = {
+    merge_tool = {
+      layout = "diff3_mixed",
+    },
+  },
+  use_icons = false,
+}
 
 -- Gitsigns: in-file Git integration
 require("gitsigns").setup {
   attach_to_untracked = true,
-  current_line_blame_opts = { delay = 0 },
+  current_line_blame_opts = {
+    delay = 0,
+  },
 }
 
 -- Conform: formatting
@@ -137,7 +164,9 @@ require("conform").setup {
       return
     end
 
-    return { lsp_format = "fallback" }
+    return {
+      lsp_format = "fallback",
+    }
   end,
   formatters_by_ft = {
     lua = { "stylua" },
@@ -167,7 +196,10 @@ vim.g.compile_mode = {
   default_command = "",
   bang_expansion = true,
   directory_change_matchers = {
-    { regex = [[^> @\?[^@]\+@\S\+ \S\+ \zs\(\S\+\)\ze$]], filename = 1 },
+    {
+      regex = [[^> @\?[^@]\+@\S\+ \S\+ \zs\(\S\+\)\ze$]],
+      filename = 1,
+    },
   },
   error_regexp_table = {
     custom = {
@@ -178,10 +210,16 @@ vim.g.compile_mode = {
       priority = 2,
     },
     odin = {
-      regex = [[\([^(]\+\)(\(\d\+\):\(\d\+\)) ]],
+      regex = [[\([^(]\+\)(\(\d\+\):\(\d\+\)):\? ]],
       filename = 1,
       row = 2,
       col = 3,
+    },
+    odin_panic = {
+      regex = [[\[\([^:]\+\.odin\):\(\d\+\):[^[]*\].\?]],
+      filename = 1,
+      row = 2,
+      priority = 2,
     },
     github = {
       regex = [[::\%(error\|\(warning\)\)\s*file=\([^,]\+\),line=\(\d\+\)\%(,endLine=\(\d\+\)\)\?,col=\(\d\+\)\%(,endColumn=\(\d\+\)\)\?[^:]\+::\s*]],
@@ -197,8 +235,14 @@ vim.g.compile_mode = {
       col = 3,
       priority = 2,
     },
-    typescript = {
-      regex = "^\\(.\\+\\)(\\([1-9][0-9]*\\)[,:]\\([1-9][0-9]*\\)): error TS[1-9][0-9]*:",
+    tsc1 = {
+      regex = [[^\(.\+\)(\([1-9][0-9]*\)[,:]\([1-9][0-9]*\)): error TS[1-9][0-9]*:]],
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    tsc2 = {
+      regex = [[^\(.\+\):\([1-9][0-9]*\):\([1-9][0-9]*\)\s\+-\s\+error\s\+TS[1-9][0-9]*:]],
       filename = 1,
       row = 2,
       col = 3,
@@ -209,14 +253,35 @@ vim.g.compile_mode = {
       row = 2,
       col = 3,
     },
+    rustc = {
+      regex = [[^\s*-->\s*\([^:]\+\):\(\d\+\):\(\d\+\)]],
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    ziglings = {
+      regex = [[^Edit \(\S\+\) and run 'zig build' again\.$]],
+      filename = 1,
+    },
+    zig_panic = {
+      regex = [[^\s\+\([^:]\+\):\(\d\+\):\(\d\+\): ]],
+      priority = 2,
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
   },
 }
 
 -- Highlight TODO comments
 require("todo-comments").setup {
   signs = false,
-  search = { pattern = [[\b(KEYWORDS)(\([^\)]*\))?:]] },
-  highlight = { pattern = [[.*<((KEYWORDS)%(\(.{-1,}\))?):]] },
+  search = {
+    pattern = [[\b(KEYWORDS)(\([^\)]*\))?:]],
+  },
+  highlight = {
+    pattern = [[.*<((KEYWORDS)%(\(.{-1,}\))?):]],
+  },
   colors = {
     error = { "DiagnosticError" },
     warning = { "DiagnosticWarn" },
@@ -228,33 +293,15 @@ require("todo-comments").setup {
 }
 
 -- Treesitter: syntax highlights + text-objects
-require("nvim-treesitter.configs").setup {
-  modules = {},
+require("tree-sitter-manager").setup {
   auto_install = true,
-  ensure_installed = {},
-  ignore_install = {},
-  sync_install = false,
-  highlight = { enable = true, additional_vim_regex_highlighting = {} },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true,
-      include_surrounding_whitespace = true,
-      keymaps = {
-        ["af"] = { query = "@function.outer", desc = "function" },
-        ["if"] = { query = "@function.inner", desc = "function" },
-        ["ac"] = { query = "@class.outer", desc = "class" },
-        ["ic"] = { query = "@class.inner", desc = "class" },
-        ["aP"] = { query = "@parameter.outer", desc = "arg" },
-        ["iP"] = { query = "@parameter.inner", desc = "arg" },
-        ["aa"] = { query = "@jsx_attr", desc = "JSX attribute" },
-      },
-    },
-  },
+  highlight = true,
 }
 
 -- Mason: install LSP servers
-require("mason").setup {}
+require("mason").setup {
+  registries = { "lua:packages", "github:mason-org/mason-registry" },
+}
 
 -- LuaSnip: snippets
 local luasnip = require "luasnip"
@@ -263,7 +310,9 @@ luasnip.setup {
   updateevents = { "TextChanged", "TextChangedI" },
 }
 
-require("luasnip.loaders.from_lua").load { paths = "./snippets/" }
+require("luasnip.loaders.from_lua").load {
+  paths = "./snippets/",
+}
 
 -- Replace Vim snippet functionality with LuaSnip
 vim.snippet.expand = luasnip.lsp_expand
@@ -310,7 +359,9 @@ end
 
 local function get_parent_dir()
   local buffer = vim.api.nvim_get_current_buf()
-  local ft = vim.api.nvim_get_option_value("filetype", { buf = buffer })
+  local ft = vim.api.nvim_get_option_value("filetype", {
+    buf = buffer,
+  })
 
   if ft == "oil" then
     return require("oil").get_current_dir()
@@ -321,7 +372,9 @@ end
 
 local function get_current_dir()
   local buffer = vim.api.nvim_get_current_buf()
-  local ft = vim.api.nvim_get_option_value("filetype", { buf = buffer })
+  local ft = vim.api.nvim_get_option_value("filetype", {
+    buf = buffer,
+  })
 
   if ft == "oil" then
     return require("oil").get_current_dir()
@@ -372,11 +425,15 @@ end
 
 vim.api.nvim_create_user_command("AutoformatToggle", function(param)
   autoformat_toggle(param.bang)
-end, { bang = true })
+end, {
+  bang = true,
+})
 vim.api.nvim_create_user_command("LspRestart", function(param)
   vim.lsp.enable(param.args, false)
   vim.lsp.enable(param.args, true)
-end, { nargs = 1 })
+end, {
+  nargs = 1,
+})
 
 -- }}}
 
@@ -386,7 +443,9 @@ end, { nargs = 1 })
 ---@diagnostic disable-next-line: param-type-mismatch
 vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking text",
-  group = vim.api.nvim_create_augroup("highlight-yank", { clear = true }),
+  group = vim.api.nvim_create_augroup("highlight-yank", {
+    clear = true,
+  }),
   callback = function()
     vim.highlight.on_yank()
   end,
@@ -409,9 +468,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(ev)
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client and client:supports_method "textDocument/completion" then
-      vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+      vim.lsp.completion.enable(true, client.id, ev.buf, {
+        autotrigger = true,
+      })
 
-      vim.keymap.set({ "i", "s" }, "<C-n>", vim.lsp.completion.get, { buffer = ev.buf })
+      vim.keymap.set({ "i", "s" }, "<C-n>", vim.lsp.completion.get, {
+        buffer = ev.buf,
+      })
     end
   end,
 })
@@ -509,24 +572,40 @@ set("n", "[e", "<cmd>PrevError<cr>")
 set("n", "]e", "<cmd>NextError<cr>")
 set("n", "]]e", "<cmd>CurrentError<cr>")
 set("n", "]t", function()
-  require("todo-comments").jump_next { keywords = { "TODO" } }
+  require("todo-comments").jump_next {
+    keywords = { "TODO" },
+  }
 end)
 set("n", "[t", function()
-  require("todo-comments").jump_prev { keywords = { "TODO" } }
+  require("todo-comments").jump_prev {
+    keywords = { "TODO" },
+  }
 end)
 
 -- Visual
-set("x", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-set("x", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+set("x", "J", ":m '>+1<CR>gv=gv", {
+  desc = "Move selection down",
+})
+set("x", "K", ":m '<-2<CR>gv=gv", {
+  desc = "Move selection up",
+})
 set("x", "C", "<Plug>(abolish-coerce)")
 
 -- Insert/visual
 set({ "i", "s" }, "<C-l>", function()
-  return vim.snippet.active { direction = 1 } and vim.snippet.jump(1)
-end, { silent = true })
+  return vim.snippet.active {
+    direction = 1,
+  } and vim.snippet.jump(1)
+end, {
+  silent = true,
+})
 set({ "i", "s" }, "<C-h>", function()
-  return vim.snippet.active { direction = -1 } and vim.snippet.jump(-1)
-end, { silent = true })
+  return vim.snippet.active {
+    direction = -1,
+  } and vim.snippet.jump(-1)
+end, {
+  silent = true,
+})
 
 -- Override keymaps
 set("t", "<Esc><Esc>", "<C-\\><C-n>")
@@ -540,7 +619,10 @@ set("n", "[c", function()
     require("gitsigns").nav_hunk "prev"
   end)
   return "<Ignore>"
-end, { expr = true, desc = "Previous Hunk" })
+end, {
+  expr = true,
+  desc = "Previous Hunk",
+})
 set("n", "]c", function()
   if vim.wo.diff then
     return "]c"
@@ -573,25 +655,38 @@ vim.cmd.colorscheme "catppuccin-mocha"
 
 -- {{{ LSP
 -- Values -> Mason name
-local mason_names = { rust_analyzer = "rust-analyzer" }
+local mason_names = {
+  rust_analyzer = "rust-analyzer",
+}
 
 -- Get all configured LSP servers
 local config_root = vim.fn.stdpath "config" .. "/lsp"
-local config_files = (vim.fn.glob(config_root .. "/*", false, true))
-local configured = vim.tbl_map(function(value)
-  return vim.fn.fnamemodify(value, ":t:r")
-end, config_files)
-
+local config_files = vim.fn.glob(config_root .. "/*", false, true)
+local configured = vim
+  .iter(config_files)
+  :map(function(value)
+    return vim.fn.fnamemodify(value, ":t:r")
+  end)
+  :totable()
+-- List of additional Mason things to automatically install
+local extra_installs = { "shellcheck" }
+-- List of LSPs not to install (because they're locally installed, for example)
+local no_install = { "ols" }
+local needs_install = vim
+  .iter({ configured, extra_installs }) -- Join the configured and extra installs together
+  :flatten(1)
+  :filter(function(server)
+    return not vim.list_contains(no_install, server)
+  end)
 -- Install uninstalled servers on confirm
 local installed = require("mason-registry").get_installed_package_names()
-local uninstalled = vim.tbl_filter(
-  function(server)
+local uninstalled = needs_install
+  :map(function(server)
+    return mason_names[server] or server
+  end)
+  :filter(function(server)
     return not vim.list_contains(installed, server)
-  end,
-  vim.tbl_map(function(value)
-    return mason_names[value] or value
-  end, vim.list_extend({ "shellcheck" }, configured))
-)
+  end)
 if #uninstalled > 0 then
   local uninstalled_text = vim.fn.join(uninstalled, "\n")
   local choice = vim.fn.confirm(("These servers will be installed:\n\n%s\n"):format(uninstalled_text), "&Yes\n&No", 1)
