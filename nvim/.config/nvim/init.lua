@@ -234,7 +234,12 @@ require("tree-sitter-manager").setup {
 }
 
 -- Mason: install LSP servers
-require("mason").setup {}
+require("mason").setup {
+  registries = {
+    "lua:packages",
+    "github:mason-org/mason-registry",
+  },
+}
 
 -- LuaSnip: snippets
 local luasnip = require "luasnip"
@@ -556,16 +561,31 @@ vim.cmd "colorscheme gruber-darker"
 
 -- Get all configured LSP servers
 local config_root = vim.fn.stdpath "config" .. "/lsp"
-local config_files = (vim.fn.glob(config_root .. "/*", false, true))
-local configured = vim.tbl_map(function(value)
-  return vim.fn.fnamemodify(value, ":t:r")
-end, config_files)
-
+local config_files = vim.fn.glob(config_root .. "/*", false, true)
+local configured = vim
+  .iter(config_files)
+  :map(function(value)
+    return vim.fn.fnamemodify(value, ":t:r")
+  end)
+  :totable()
+-- List of additional Mason things to automatically install
+local extra_installs = { "shellcheck" }
+-- List of LSPs not to install (because they're locally installed, for example)
+local no_install = { "ols" }
+local needs_install = vim
+  .iter({ configured, extra_installs })
+  -- Join the configured and extra installs together
+  :flatten(1)
+  :filter(function(server)
+    return not vim.list_contains(no_install, server)
+  end)
 -- Install uninstalled servers on confirm
 local installed = require("mason-registry").get_installed_package_names()
-local uninstalled = vim.tbl_filter(function(server)
-  return not vim.list_contains(installed, server)
-end, vim.list_extend({ "shellcheck" }, configured))
+local uninstalled = needs_install
+  :filter(function(server)
+    return not vim.list_contains(installed, server)
+  end)
+  :totable()
 if #uninstalled > 0 then
   local uninstalled_text = vim.fn.join(uninstalled, "\n")
   local choice = vim.fn.confirm(("These servers will be installed:\n\n%s\n"):format(uninstalled_text), "&Yes\n&No", 1)
