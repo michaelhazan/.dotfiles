@@ -178,10 +178,16 @@ vim.g.compile_mode = {
       priority = 2,
     },
     odin = {
-      regex = [[\([^(]\+\)(\(\d\+\):\(\d\+\)) ]],
+      regex = [[\([^(]\+\)(\(\d\+\):\(\d\+\)):\? ]],
       filename = 1,
       row = 2,
       col = 3,
+    },
+    odin_panic = {
+      regex = [[\[\([^:]\+\.odin\):\(\d\+\):[^[]*\].\?]],
+      filename = 1,
+      row = 2,
+      priority = 2,
     },
     github = {
       regex = [[::\%(error\|\(warning\)\)\s*file=\([^,]\+\),line=\(\d\+\)\%(,endLine=\(\d\+\)\)\?,col=\(\d\+\)\%(,endColumn=\(\d\+\)\)\?[^:]\+::\s*]],
@@ -197,14 +203,37 @@ vim.g.compile_mode = {
       col = 3,
       priority = 2,
     },
-    typescript = {
-      regex = "^\\(.\\+\\)(\\([1-9][0-9]*\\)[,:]\\([1-9][0-9]*\\)): error TS[1-9][0-9]*:",
+    tsc1 = {
+      regex = [[^\(.\+\)(\([1-9][0-9]*\)[,:]\([1-9][0-9]*\)): error TS[1-9][0-9]*:]],
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    tsc2 = {
+      regex = [[^\(.\+\):\([1-9][0-9]*\):\([1-9][0-9]*\)\s\+-\s\+error\s\+TS[1-9][0-9]*:]],
       filename = 1,
       row = 2,
       col = 3,
     },
     kotlin = {
       regex = "^\\%(e\\|w\\): file://\\(.*\\):\\(\\d\\+\\):\\(\\d\\+\\) ",
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    rustc = {
+      regex = [[^\s*-->\s*\([^:]\+\):\(\d\+\):\(\d\+\)]],
+      filename = 1,
+      row = 2,
+      col = 3,
+    },
+    ziglings = {
+      regex = [[^Edit \(\S\+\) and run 'zig build' again\.$]],
+      filename = 1,
+    },
+    zig_panic = {
+      regex = [[^\s\+\([^:]\+\):\(\d\+\):\(\d\+\): ]],
+      priority = 2,
       filename = 1,
       row = 2,
       col = 3,
