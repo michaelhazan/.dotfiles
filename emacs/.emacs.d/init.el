@@ -18,6 +18,8 @@
 ;; Turn on relative line numbers
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode 1)
+;; Start in fullscreen
+(add-hook 'window-setup-hook 'toggle-frame-fullscreen t)
 
 ;; Setup packages
 (require 'package)
@@ -88,11 +90,14 @@
   (require 'cc-mode)
   (define-key c-mode-base-map (kbd "C-c f") 'clang-format-buffer))
 
-;; Color sequences in compilation
+;; ANSI sequences in compilation
+(require 'ansi-osc)
+(setq ansi-osc-for-compilation-buffer t)
+(add-hook 'compilation-filter-hook #'ansi-osc-compilation-filter)
+;; Color sequences in
 (require 'ansi-color)
-(defun colorize-compilation-buffer ()
-  (ansi-color-apply-on-region compilation-filter-start (point-max)))
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+(setq ansi-color-for-compilation-mode t)
+(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
 ;; Languages
 (use-package lua-mode)
