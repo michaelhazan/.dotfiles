@@ -46,36 +46,41 @@ vim.filetype.add {
 -- {{{ Plugins
 
 -- Install plugins with native Neovim package manager (requires Neovim 0.12+)
-local plugins = {
-  { src = "https://github.com/stevearc/oil.nvim" },
-  { src = "https://github.com/mason-org/mason.nvim" },
-  { src = "https://github.com/nvim-lua/plenary.nvim" },
-  { src = "https://github.com/nvim-telescope/telescope.nvim" },
-  { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
-  { src = "https://github.com/NeogitOrg/neogit" },
-  { src = "https://github.com/sindrets/diffview.nvim" },
-  { src = "https://github.com/blazkowolf/gruber-darker.nvim" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "master" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
-  { src = "https://github.com/stevearc/conform.nvim" },
-  { src = "https://github.com/lewis6991/gitsigns.nvim" },
-  { src = "https://github.com/L3MON4D3/LuaSnip" },
-  { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
-  { src = "https://github.com/tpope/vim-abolish" },
-  { src = "https://github.com/folke/todo-comments.nvim" },
-  { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
-  { src = "https://github.com/nvim-lualine/lualine.nvim" },
-  { src = "https://github.com/tweekmonster/helpful.vim" },
-}
-
--- Use local directories for plugins I developed
-local compile_mode_path = vim.env.HOME .. "/plugins/compile-mode.nvim"
-
-if vim.fn.isdirectory(compile_mode_path) == 1 then
-  vim.opt.rtp:append(compile_mode_path)
-else
-  table.insert(plugins, { src = "https://github.com/ej-shafran/compile-mode.nvim" })
-end
+local local_plugins_dir = vim.env.HOME .. "/plugins"
+local plugins = vim
+  .iter({
+    { src = "https://github.com/stevearc/oil.nvim" },
+    { src = "https://github.com/mason-org/mason.nvim" },
+    { src = "https://github.com/nvim-lua/plenary.nvim" },
+    { src = "https://github.com/nvim-telescope/telescope.nvim" },
+    { src = "https://github.com/nvim-telescope/telescope-ui-select.nvim" },
+    { src = "https://github.com/NeogitOrg/neogit" },
+    { src = "https://github.com/sindrets/diffview.nvim" },
+    { src = "https://github.com/blazkowolf/gruber-darker.nvim" },
+    { src = "https://github.com/romus204/tree-sitter-manager.nvim" },
+    { src = "https://github.com/stevearc/conform.nvim" },
+    { src = "https://github.com/lewis6991/gitsigns.nvim" },
+    { src = "https://github.com/L3MON4D3/LuaSnip" },
+    { src = "https://github.com/ThePrimeagen/harpoon", version = "harpoon2" },
+    { src = "https://github.com/tpope/vim-abolish" },
+    { src = "https://github.com/folke/todo-comments.nvim" },
+    { src = "https://github.com/m00qek/baleia.nvim", version = "v1.3.0" },
+    { src = "https://github.com/nvim-lualine/lualine.nvim" },
+    { src = "https://github.com/tweekmonster/helpful.vim" },
+    { src = "https://github.com/ej-shafran/compile-mode.nvim", use_local = "compile-mode.nvim" },
+  })
+  :filter(function(plugin)
+    if not plugin.use_local then
+      return true
+    end
+    local path = local_plugins_dir .. "/" .. plugin.use_local
+    local isdir = vim.fn.isdirectory(path) == 1
+    if isdir then
+      vim.opt.rtp:append(path)
+    end
+    return not isdir
+  end)
+  :totable()
 
 vim.pack.add(plugins)
 
@@ -223,29 +228,9 @@ require("todo-comments").setup {
 }
 
 -- Treesitter: syntax highlights + text-objects
-require("nvim-treesitter.configs").setup {
-  modules = {},
+require("tree-sitter-manager").setup {
   auto_install = true,
-  ensure_installed = {},
-  ignore_install = {},
-  sync_install = false,
-  highlight = { enable = true, additional_vim_regex_highlighting = {} },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true,
-      include_surrounding_whitespace = true,
-      keymaps = {
-        ["af"] = { query = "@function.outer", desc = "function" },
-        ["if"] = { query = "@function.inner", desc = "function" },
-        ["ac"] = { query = "@class.outer", desc = "class" },
-        ["ic"] = { query = "@class.inner", desc = "class" },
-        ["aP"] = { query = "@parameter.outer", desc = "arg" },
-        ["iP"] = { query = "@parameter.inner", desc = "arg" },
-        ["aa"] = { query = "@jsx_attr", desc = "JSX attribute" },
-      },
-    },
-  },
+  highlight = true,
 }
 
 -- Mason: install LSP servers
