@@ -1,6 +1,6 @@
 ---@type vim.lsp.Config
 return {
-  cmd = { "oxc_language_server" },
+  cmd = { "oxlint", "--lsp" },
   filetypes = {
     "javascript",
     "javascriptreact",

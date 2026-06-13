@@ -24,6 +24,7 @@ export GHCUP_DIR="$HOME/.ghcup"
 export CARGO_DIR="$HOME/.cargo"
 export NVM_DIR="$HOME/.nvm"
 export BOB_DIR="$HOME/.local/share/bob"
+export SDKMAN_DIR="$HOME/.sdkman"
 export ZVM_INSTALL="$HOME/.zvm/self"
 # You can add/override environment variables for tools
 # that you don't want to push to git in "$HOME/.bash_tools.local"
@@ -130,6 +131,9 @@ sourceif "$HOME/.fzf.bash"
 sourceif "$HOME/.local/bin/fzf-git.sh"
 sourceif "$GHCUP_DIR/env"
 sourceif "$CARGO_DIR/env"
+sourceif "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 if command -v starship >/dev/null; then
 	eval "$(starship init bash)"
@@ -316,3 +320,11 @@ ssologout() {
 
 
 
+
+# pnpm
+export PNPM_HOME="/Users/mikey/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
