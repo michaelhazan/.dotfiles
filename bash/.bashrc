@@ -270,11 +270,15 @@ githubraw() {
 # Specific turbo functions
 turd() {
 	action="run"
-	filters="--filter 'server' --filter '@*/staff' --filter '@*/admin'"
+	if [[ $# -eq 0 ]]; then
+		filters="--filter 'server' --filter '@*/staff' --filter '@*/admin'"
+	else
+		filters=""
+	fi
 	for opt in "$@"; do
 		case $opt in
 		  --all) filters="" ;;
-		  --server) filters+="--filter 'server'" ;;
+		  --server) filters+=" --filter 'server'" ;;
 		  -w|--watch) action="watch";;
 		  -r|--run) action="run";;
 		  -p|--patient) filters+=" --filter '@*/patient'" ;;
@@ -282,6 +286,7 @@ turd() {
 		  -db|--department-board) filters+=" --filter '@*/department-board'" ;;
 		  -a|--admin) filters+=" --filter @*/admin" ;;
 		  -i|--internal) filters+=" --filter '@internal/*'" ;;
+		  -ap|--auto-planner) filters+=" --filter 'auto-planner'" ;;
 		esac
 	done
 	eval "turbo $action dev $filters"
