@@ -40,6 +40,7 @@ vim.filetype.add {
     -- Use `gitcommit` filetype for `Neogit`
     NeogitCommitMessage = "gitcommit",
     lss = "xml",
+    mdx = "mdx",
   },
 }
 
@@ -70,6 +71,8 @@ local plugins = vim
     { src = "https://github.com/nvim-lualine/lualine.nvim" },
     { src = "https://github.com/tweekmonster/helpful.vim" },
     { src = "https://github.com/ej-shafran/compile-mode.nvim", use_local = "compile-mode.nvim" },
+    { src = "https://github.com/vyfor/cord.nvim" },
+    { src = "https://github.com/davidmh/mdx.nvim" },
   })
   :filter(function(plugin)
     if not plugin.use_local then
@@ -166,11 +169,14 @@ require("conform").setup {
 
     return {
       lsp_format = "fallback",
+      formatting_options = {},
     }
   end,
+
   formatters_by_ft = {
     lua = { "stylua" },
     c = { "clang-format" },
+    mdx = { "oxfmt", "prettierd", "prettier" },
     typescript = { "oxfmt", "prettierd", "prettier" },
     javascript = { "oxfmt", "prettierd", "prettier" },
     html = { "oxfmt", "prettierd", "prettier" },
@@ -186,6 +192,57 @@ require("conform").setup {
     python = { "black" },
     kotlin = { "ktlint" },
     rust = { "rustfmt" },
+  },
+}
+
+local cordasync = require "cord.core.async"
+local cordprocess = require "cord.core.uv.process"
+
+-- @param callback fun(opts: CordOpts):boolean|string|nil
+local function hide_privates(callback)
+  return cordasync.wrap(function(opts)
+    local is_private = opts:private_repo():await()
+    if is_private then
+      return nil
+    else
+      return callback(opts)
+    end
+  end)
+end
+
+require("cord").setup {
+  display = { theme = "minecraft", flavor = "dark", view = "full" },
+  editor = { tooltip = "I use Neovim btw" },
+  text = {
+    workspace = hide_privates(function(opts)
+      return "In " .. opts.filename
+    end),
+    viewing = hide_privates(function(opts)
+      return "Viewing " .. opts.filename
+    end),
+    editing = hide_privates(function(opts)
+      return "Editing " .. opts.filename
+    end),
+  },
+  variables = {
+    private_repo = cordasync.wrap(function(opts)
+      local is_private = opts.cache:get_or_compute(opts.workspace_dir .. ":is_repo_private", 300, function()
+        local result = cordprocess
+          .spawn({
+            cmd = "gh",
+            args = { "repo", "view", "--json", "isPrivate", "--template", "{{.isPrivate}}" },
+            cwd = opts.workspace_dir,
+          })
+          :await()
+
+        if not result or result.code ~= 0 then
+          return false
+        end
+        return vim.trim(result.stdout)
+      end)
+
+      return is_private == "true"
+    end),
   },
 }
 
@@ -581,15 +638,25 @@ set("n", "[t", function()
     keywords = { "TODO" },
   }
 end)
+set("n", "[q", "<cmd>cprev<cr>", { desc = "Previous quickfix item" })
+set("n", "]q", "<cmd>cnext<cr>", { desc = "Next quickfix item" })
+
+-- Navigation
+set({ "n", "v" }, "<leader>h", "^", { desc = "Go to start of line (first non-blank)" })
+set({ "n", "v" }, "<leader>j", "gg", { desc = "Go to start of file" })
+set({ "n", "v" }, "<leader>k", "G", { desc = "Go to end of file" })
+set({ "n", "v" }, "<leader>l", "$", { desc = "Go to end of line" })
 
 -- Visual
+set("v", "p", '"_dP', { desc = "Paste without overwriting clipboard" })
+set("v", "P", "p", { desc = "Paste and copy replaced text" })
+set("x", "C", "<Plug>(abolish-coerce)")
 set("x", "J", ":m '>+1<CR>gv=gv", {
   desc = "Move selection down",
 })
 set("x", "K", ":m '<-2<CR>gv=gv", {
   desc = "Move selection up",
 })
-set("x", "C", "<Plug>(abolish-coerce)")
 
 -- Insert/visual
 set({ "i", "s" }, "<C-l>", function()
@@ -702,6 +769,7 @@ if #uninstalled > 0 then
 end
 
 -- Enable servers
+
 vim.lsp.enable(configured)
 
 -- }}}

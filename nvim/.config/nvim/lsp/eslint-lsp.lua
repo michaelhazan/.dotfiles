@@ -27,6 +27,7 @@ return {
     "typescript",
     "typescriptreact",
     "typescript.tsx",
+    "mdx",
     "vue",
     "svelte",
     "astro",
@@ -70,7 +71,7 @@ return {
   -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
   settings = {
     validate = "on",
-    packageManager = nil,
+    packageManager = vim.NIL,
     useESLintClass = false,
     experimental = {
       useFlatConfig = false,
