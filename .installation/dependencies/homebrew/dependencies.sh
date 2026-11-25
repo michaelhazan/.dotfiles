@@ -16,6 +16,7 @@ export BOTTLES=(
 	"eza"
 	"xsel"
 	"starship"
+	"umputun/apps/revdiff"
 
 	# Version Managers
 	"bob"

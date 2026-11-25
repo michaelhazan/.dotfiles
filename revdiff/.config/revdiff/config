@@ -1,0 +1,45 @@
+; revdiff configuration
+; Run `revdiff --dump-config` to see every available option.
+
+[Application Options]
+
+; syntax highlighting — same palette as nvim's `catppuccin-mocha`
+chroma-style = catppuccin-mocha
+
+; Colors are taken from the highlight groups nvim's catppuccin-mocha produces
+; (`:lua =vim.api.nvim_get_hl(0, { name = "<Group>" })`).
+[color options]
+; FloatBorder / Directory
+color-accent = #89b4fa
+; surface1
+color-border = #45475a
+; Normal
+color-normal = #cdd6f4
+; LineNr
+color-muted = #45475a
+; TelescopeSelection
+color-selected-fg = #f2cdcd
+color-selected-bg = #313244
+; yellow
+color-annotation = #f9e2af
+; CursorLineNr / CursorLine
+color-cursor-fg = #b4befe
+color-cursor-bg = #2a2b3c
+; Added / DiffAdd
+color-add-fg = #a6e3a1
+color-add-bg = #364143
+; red / DiffDelete
+color-remove-fg = #f38ba8
+color-remove-bg = #443244
+; Changed / DiffChange
+color-modify-fg = #89b4fa
+color-modify-bg = #25293c
+; Normal background
+color-tree-bg = #1e1e2e
+color-diff-bg = #1e1e2e
+; lualine (normal mode, section a)
+color-status-fg = #181825
+color-status-bg = #89b4fa
+; Search
+color-search-fg = #cdd6f4
+color-search-bg = #3e5767
