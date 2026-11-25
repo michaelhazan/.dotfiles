@@ -216,7 +216,14 @@ if command -v bat >/dev/null; then
 fi
 # `eza` - a better `ls`
 if command -v eza >/dev/null; then
+	export EZA_CONFIG_DIR="$HOME/.config/eza"
 	alias ls="eza"
+	alias ll="ls -alH"
+	alias la="ls -a"
+	alias lt="ls -TH --git-ignore"
+	alias lat="ls -TaH --git-ignore"
+	alias laat="ls -TaH"
+	alias l="ls -F"
 fi
 # pbcopy + pbpaste for linux
 if command -v xsel >/dev/null; then
@@ -225,10 +232,7 @@ if command -v xsel >/dev/null; then
 fi
 # Neovim-related commands
 alias pager='nvim +Man!'
-# ls
-alias ll='ls -alH'
-alias la='ls -a'
-alias l='ls -F'
+
 # Allow colors
 if [ -x /usr/bin/dircolors ]; then
 	alias dir='dir --color=auto'
@@ -309,7 +313,9 @@ n() {
 	rm -f -- "$NNN_TMPFILE" >/dev/null
 }
 # AWS
-ssologin() { 
+# not on EC2: skip the IMDS region lookup that stalls every aws call ~2s
+export AWS_EC2_METADATA_DISABLED=true
+ssologin() {
 	command aws sso login --profile "$1" 
 	export AWS_PROFILE="$1" 
 }

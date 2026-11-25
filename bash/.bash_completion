@@ -55,6 +55,18 @@ _complete_cdwt() {
   COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 complete -F _complete_cdwt cdwt
-complete -W "$(aws configure list-profiles)" ssologin 
+_complete_ssologin() {
+  COMPREPLY=()
+  [[ $COMP_CWORD -eq 1 ]] || return
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local profiles
+  # parse config files directly; `aws configure list-profiles` takes seconds
+  profiles=$(sed -nE 's/^[[:space:]]*\[(profile[[:space:]]+)?([^]]+)\].*/\2/p' \
+    "${AWS_CONFIG_FILE:-$HOME/.aws/config}" \
+    "${AWS_SHARED_CREDENTIALS_FILE:-$HOME/.aws/credentials}" 2>/dev/null \
+  | grep -vE '^(sso-session|services)[[:space:]]' | sort -u)
+  COMPREPLY=( $(compgen -W "$profiles" -- "$cur") )
+}
+complete -F _complete_ssologin ssologin
 
 complete -C "aws_completer" aws
