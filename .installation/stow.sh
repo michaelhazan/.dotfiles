@@ -8,6 +8,11 @@ __check_for_dependency stow
 
 PACKAGES=$(ls -d */)
 
+# Pre-create shared dirs so stow links individual files into them instead of
+# "folding" the whole dir into a symlink to this repo (which makes every app
+# that writes to ~/.local write into the dotfiles).
+mkdir -p ~/.local/bin ~/.local/share/man/man1 ~/.config
+
 if [ "$AUTO_STOW" -eq 0 ]; then
     PACKAGES=$(gum choose --header "Select packages to stow:" --no-limit $PACKAGES)
 fi
