@@ -1,0 +1,129 @@
+#!/bin/bash
+# pear — control Pear Desktop (YouTube Music) from Siri Shortcuts or a terminal.
+#
+#   pear play | pause | toggle | next | prev | like | dislike | mute | shuffle
+#   pear vol [0-100 | up | down]   set/raise/lower volume (no arg: print it)
+#   pear now                       print "Title by Artist"
+#   pear song <query>              search and play the best matching song (starts a radio from it)
+#   pear launch                    (re)start Pear with the local debug port `pear song` needs
+#
+# Controls use Pear's "API Server" plugin (Plugins menu → API Server → enable).
+# `pear song` drives the YouTube Music page over the Chrome DevTools protocol because
+# the plugin's own add-to-queue endpoint is broken in Pear 3.12.0.
+#
+# Env: PEAR_HOST (default 127.0.0.1), PEAR_PORT (default 26538), PEAR_CDP_PORT (default 9333),
+#      PEAR_TOKEN (only needed if the plugin's auth strategy isn't "No auth").
+
+set -euo pipefail
+export PATH="/usr/bin:/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+APP_NAME="YouTube Music" # Pear Desktop's macOS app name (bundle id com.github.th-ch.youtube-music)
+BASE="http://${PEAR_HOST:-127.0.0.1}:${PEAR_PORT:-26538}/api/v1"
+CDP="http://127.0.0.1:${PEAR_CDP_PORT:-9333}"
+# YouTube Music search filter: "Songs" only
+SONGS_FILTER='EgWKAQIIAWoKEAkQBRAKEAMQBA=='
+
+die() { echo "$*" >&2; exit 1; }
+
+api() { # api METHOD PATH [JSON_BODY]
+  local args=(-sS -f -m 10 -X "$1" "$BASE$2")
+  [[ -n "${PEAR_TOKEN:-}" ]] && args+=(-H "Authorization: Bearer $PEAR_TOKEN")
+  [[ $# -ge 3 ]] && args+=(-H 'Content-Type: application/json' -d "$3")
+  curl "${args[@]}" 2>/dev/null ||
+    die "Couldn't reach Pear. Is it running with the API Server plugin enabled?"
+}
+
+api_up() { curl -s -m 1 -o /dev/null "$BASE/volume"; }
+cdp_page() { curl -s -m 1 "$CDP/json" 2>/dev/null | jq -r 'first(.[] | select(.type == "page" and (.url | contains("music.youtube.com"))) | .webSocketDebuggerUrl) // empty'; }
+
+launch() {
+  if pgrep -xq "$APP_NAME"; then
+    osascript -e "quit app \"$APP_NAME\""
+    for _ in $(seq 1 20); do pgrep -xq "$APP_NAME" || break; sleep 0.5; done
+  fi
+  open -g -a "$APP_NAME" --args "--remote-debugging-port=${PEAR_CDP_PORT:-9333}"
+  for _ in $(seq 1 60); do [[ -n "$(cdp_page)" ]] && api_up && return 0; sleep 0.5; done
+  die "Pear didn't come up. Is the API Server plugin enabled?"
+}
+
+find_node() {
+  command -v node && return
+  ls -1d "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | tail -1 | grep . && return
+  die "pear song needs Node.js (for the DevTools connection)."
+}
+
+play_video() { # run YouTube Music's own "play this song" command inside the page
+  local ws
+  ws=$(cdp_page)
+  if [[ -z "$ws" ]]; then
+    launch
+    ws=$(cdp_page)
+  fi
+  "$(find_node)" - "$ws" "$1" <<'JS'
+const [ws, videoId] = process.argv.slice(2);
+const expression = `document.querySelector('ytmusic-app').resolveCommand({ watchEndpoint: { videoId: ${JSON.stringify(videoId)} } })`;
+const sock = new WebSocket(ws);
+sock.onopen = () => sock.send(JSON.stringify({ id: 1, method: 'Runtime.evaluate', params: { expression } }));
+sock.onmessage = (m) => {
+  const r = JSON.parse(m.data);
+  if (r.id !== 1) return;
+  if (r.result?.exceptionDetails) { console.error(r.result.exceptionDetails.exception?.description); process.exitCode = 1; }
+  sock.close();
+};
+sock.onerror = () => { console.error('DevTools connection failed'); process.exit(1); };
+JS
+}
+
+find_video_id() { # first song result for a query
+  jq -cn --arg q "$1" --arg p "$SONGS_FILTER" '{query: $q, params: $p}' |
+    { read -r body; api POST /search "$body"; } |
+    jq -r 'first(.. | objects | (.watchEndpoint.videoId // .playlistItemData.videoId // empty)) // empty'
+}
+
+now_playing() {
+  api GET /song | jq -r 'if .title then "\(.title) by \(.artist)" else "Nothing is playing" end'
+}
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  play)    api POST /play >/dev/null ;;
+  pause)   api POST /pause >/dev/null ;;
+  toggle)  api POST /toggle-play >/dev/null ;;
+  next)    api POST /next >/dev/null; sleep 1; now_playing ;;
+  prev)    api POST /previous >/dev/null; sleep 1; now_playing ;;
+  like)    api POST /like >/dev/null; echo "Liked $(now_playing)" ;;
+  dislike) api POST /dislike >/dev/null ;;
+  mute)    api POST /toggle-mute >/dev/null ;;
+  shuffle) api POST /shuffle >/dev/null ;;
+  now)     now_playing ;;
+  launch)  launch; echo "Pear is ready" ;;
+  vol|volume)
+    current=$(api GET /volume | jq -r '.state')
+    case "${1:-}" in
+      "")   echo "Volume is $current"; exit 0 ;;
+      up)   target=$((current + 10)) ;;
+      down) target=$((current - 10)) ;;
+      *)    target="${1//[^0-9]/}" ;;
+    esac
+    (( target > 100 )) && target=100
+    (( target < 0 )) && target=0
+    api POST /volume "{\"volume\": $target}" >/dev/null
+    echo "Volume $target"
+    ;;
+  song)
+    query="$*"
+    [[ -z "$query" ]] && die "Usage: pear song <search query>"
+    api_up || launch
+    id=$(find_video_id "$query")
+    [[ -z "$id" ]] && die "No results for \"$query\""
+    play_video "$id"
+    sleep 2
+    echo "Playing $(now_playing)"
+    ;;
+  *)
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    exit 2
+    ;;
+esac
