@@ -1,15 +1,33 @@
-theme = Catppuccin Mocha
+theme = Blazer
 cursor-style = block
 font-size = 16
-fullscreen = true
-macos-icon = official
-background-opacity = 0.95
+macos-icon = blueprint
+
 link-previews = true
 
-auto-update = download 
+auto-update = download
 
 macos-option-as-alt = left
-
 macos-auto-secure-input = true
 macos-secure-input-indication = true
 shell-integration-features = no-cursor
+
+background-opacity = 0.25
+background-blur = macos-glass-regular
+
+maximize = true
+window-padding-x = 10
+window-padding-balance = true
+window-padding-color = extend
+window-theme = auto
+
+macos-non-native-fullscreen = true
+macos-window-buttons = hidden
+macos-titlebar-style = transparent
+macos-titlebar-proxy-icon = hidden
+
+
+
+
+custom-shader = /Users/mikey/.config/ghostty/shaders/cursor_smear.glsl
+custom-shader-animation = true
